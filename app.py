@@ -114,7 +114,7 @@ def format_citation(article):
 # Function to search PubMed
 def search_pubmed(query):
     pubmed_api = os.getenv('PUB_MED_API')
-    url = f"https://api.pubmed.ncbi.nlm.nih.gov/lit/ctxp/v1.0/?query={query}"
+    url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     headers = {"Authorization": f"Bearer {pubmed_api}"}
     
     response = requests.get(url, headers=headers)
@@ -127,13 +127,6 @@ def search_pubmed(query):
 if st.button("Search") and query:
     nd = False
     search_results = scholarly.search_pubs(query)
-
-    # Optional: Magic popper effect
-    st.markdown('<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>', unsafe_allow_html=True)
-    st.markdown('<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.0.0/js/bootstrap.min.js"></script>', unsafe_allow_html=True)
-    
-    # Button click effect
-    st.markdown('<div class="magic-popper" style="display: none;"></div>', unsafe_allow_html=True)
     
     try:
         article = next(search_results)
