@@ -126,7 +126,7 @@ def search_pubmed(query):
 # Handling the search and response
 if st.button("Search") and query:
     nd = False
-    search_results = search_pubmed(query) #scholarly.search_pubs(query) 
+    search_results = scholarly.search_pubs(query) 
     
     try:
         article = next(search_results)
@@ -164,9 +164,9 @@ if st.button("Search") and query:
 
     except StopIteration:
         # Fallback to PubMed search if no articles found
-        st.write("No articles found in PubMed. Searching Google scholar...")
+        st.write("No articles found in Google Scholar. Searching PubMed...")
         nd = True
-        pubmed_results = scholarly.search_pubs(query)  #search_pubmed(query)
+        pubmed_results = search_pubmed(query)
 
         if pubmed_results:
             # Assuming the first result is the most relevant
