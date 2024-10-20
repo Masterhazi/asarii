@@ -11,7 +11,7 @@ import requests
 load_dotenv()  # Activate the local environment
 genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
 
-st.set_page_config(page_title="📖 ASaRI", page_icon="https://raw.githubusercontent.com/Masterhazi/asarii/refs/heads/main/favicon.ico")
+st.set_page_config(page_title="📖 ASaRIi", page_icon="https://raw.githubusercontent.com/Masterhazi/asarii/refs/heads/main/favicon.ico")
 
 st.markdown("""
     <meta property="og:title" content="ASaRI - Article Search and RIS File Generator">
