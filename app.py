@@ -6,6 +6,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 from scholarly import scholarly
 import requests
+from xml.etree import ElementTree as ET
 
 # Set up local environment
 load_dotenv()  # Activate the local environment
@@ -19,6 +20,7 @@ st.markdown("""
     <meta property="og:image" content="https://miro.medium.com/v2/resize:fit:180/1*Ejw4l-I7vEH281s1eCQyhg.png">
     <meta property="og:url" content="https://asarii.streamlit.app/">
 """, unsafe_allow_html=True)
+
 # Custom CSS for color scheme and button effects
 st.markdown("""
     <style>
@@ -113,80 +115,78 @@ def format_citation(article):
 
 # Function to search PubMed
 def search_pubmed(query):
-    pubmed_api = os.getenv('PUB_MED_API')
-    url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
-    headers = {"Authorization": f"Bearer {pubmed_api}"}
-    
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return None
+    esearch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+    search_params = {
+        "db": "pubmed",
+        "term": query,
+        "retmax": 1,  # Only retrieve 1 result
+        "retmode": "xml"
+    }
+
+    # Perform the search
+    response = requests.get(esearch_url, params=search_params)
+    root = ET.fromstring(response.content)
+
+    # Extract the list of PubMed IDs (PMIDs)
+    pmids = [id_elem.text for id_elem in root.findall(".//Id")]
+    return pmids
+
+# Function to fetch article details from PubMed
+def fetch_pubmed_article(pmids):
+    efetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+    fetch_params = {
+        "db": "pubmed",
+        "id": ",".join(pmids),
+        "retmode": "xml"
+    }
+
+    response = requests.get(efetch_url, params=fetch_params)
+    root = ET.fromstring(response.content)
+
+    articles = []
+    for article in root.findall(".//PubmedArticle"):
+        article_info = {
+            'bib': {
+                'title': article.find(".//ArticleTitle").text,
+                'author': [author.find(".//LastName").text + ", " + author.find(".//ForeName").text for author in article.findall(".//Author")],
+                'pub_year': article.find(".//PubDate/Year").text if article.find(".//PubDate/Year") is not None else "Unknown",
+                'venue': article.find(".//Journal/Title").text if article.find(".//Journal/Title") is not None else "Unknown Journal",
+                'volume': article.find(".//Journal/Volume").text if article.find(".//Journal/Volume") is not None else "Unknown Volume",
+                'page': article.find(".//Journal/Issue").text if article.find(".//Journal/Issue") is not None else "Unknown Page",
+                'pub_url': f"https://pubmed.ncbi.nlm.nih.gov/{article.find('.//PMID').text}"
+            },
+            'abstract': article.find(".//AbstractText").text if article.find(".//AbstractText") is not None else "No abstract available"
+        }
+        articles.append(article_info)
+
+    return articles
 
 # Handling the search and response
 if st.button("Search") and query:
-    nd = False
-    search_results = scholarly.search_pubs(query) 
-    
-    try:
-        article = next(search_results)
+    # Search in PubMed first
+    pmids = search_pubmed(query)
 
-        # Create RIS file
-        ris_file = create_ris_file(article)
-        st.text_area("RIS File", ris_file, height=300)
+    if pmids:
+        # Fetch article details from PubMed
+        articles = fetch_pubmed_article(pmids)
 
-        # Download the RIS file with the title as the filename
-        title = article['bib'].get('title', 'No Title').replace(" ", "_")
-        st.download_button("Download RIS", ris_file, file_name=f"{title}.ris")
-
-        # Generate a formatted citation
-        citation = format_citation(article)
-        st.write("**Formatted Citation:**")
-        st.text_area("Citation", citation, height=100)
-
-        # Generate a summary using Google Generative AI
-        abstract = article['bib'].get('abstract', None)
-        if abstract:
-            prompt = template.format(abstract=abstract)
-            try:
-                summary = llm.predict(text=prompt)
-                if summary:
-                    st.write("**Summary:**")
-                    st.write(summary, height=200)
-                else:
-                    st.write("No summary generated.")
-            except Exception as e:
-                st.write(f"Error generating summary: {e}")
-                st.text_area("Summary", "An error occurred while generating the summary. Please try again.", height=200)
-        else:
-            st.write("No abstract available for this article.")
-            st.text_area("Summary", "No abstract available to generate a summary.", height=200)
-
-    except StopIteration:
-        # Fallback to PubMed search if no articles found
-        st.write("No articles found in Google Scholar. Searching PubMed...")
-        nd = True
-        pubmed_results = search_pubmed(query)
-
-        if pubmed_results:
-            # Assuming the first result is the most relevant
-            article = pubmed_results[0]  # Adjust this based on the actual structure returned
-            # Here you can create the RIS file and formatted citation similarly
-            ris_file = create_ris_file(article)  # You might need to adapt the structure
+        for article in articles:
+            # Create RIS file
+            ris_file = create_ris_file(article)
             st.text_area("RIS File", ris_file, height=300)
 
             # Download the RIS file with the title as the filename
-            title = article['title'].replace(" ", "_")
+            title = article['bib']['title'].replace(" ", "_")
             st.download_button("Download RIS", ris_file, file_name=f"{title}.ris")
 
             # Generate a formatted citation
-            citation = format_citation(article)  # You might need to adapt the structure
+            citation = format_citation(article)
             st.write("**Formatted Citation:**")
-            st.text_area("Citation", height=100)
+            st.text_area("Citation", citation, height=100)
 
             # Generate a summary using Google Generative AI
-            abstract = article.get('abstract', None)
-            if abstract and nd == True:
+            abstract = article['abstract']
+            if abstract:
                 prompt = template.format(abstract=abstract)
                 try:
                     summary = llm.predict(text=prompt)
@@ -201,8 +201,54 @@ if st.button("Search") and query:
             else:
                 st.write("No abstract available for this article.")
                 st.text_area("Summary", "No abstract available to generate a summary.", height=200)
+    else:
+        # If no results in PubMed, search Google Scholar
+        st.write("No results found in PubMed. Searching Google Scholar...")
+
+        # Perform Google Scholar search
+        search_query = scholarly.search_pubs(query)
+        scholar_results = []
+
+        for _ in range(1):  # Limit to 1 result
+            try:
+                scholar_article = next(search_query)
+                scholar_results.append(scholar_article)
+            except StopIteration:
+                break
+
+        if scholar_results:
+            for scholar_article in scholar_results:
+                # Create RIS file
+                ris_file = create_ris_file(scholar_article)
+                st.text_area("RIS File", ris_file, height=300)
+
+                # Download the RIS file with the title as the filename
+                title = scholar_article.bib['title'].replace(" ", "_")
+                st.download_button("Download RIS", ris_file, file_name=f"{title}.ris")
+
+                # Generate a formatted citation
+                citation = format_citation(scholar_article)
+                st.write("**Formatted Citation:**")
+                st.text_area("Citation", citation, height=100)
+
+                # Generate a summary using Google Generative AI
+                abstract = scholar_article.bib.get('abstract', None)
+                if abstract:
+                    prompt = template.format(abstract=abstract)
+                    try:
+                        summary = llm.predict(text=prompt)
+                        if summary:
+                            st.write("**Summary:**")
+                            st.write(summary, height=200)
+                        else:
+                            st.write("No summary generated.")
+                    except Exception as e:
+                        st.write(f"Error generating summary: {e}")
+                        st.text_area("Summary", "An error occurred while generating the summary. Please try again.", height=200)
+                else:
+                    st.write("No abstract available for this article.")
+                    st.text_area("Summary", "No abstract available to generate a summary.", height=200)
         else:
-            st.write("No articles found in PubMed.")
-    
-# Close the purple background div
+            st.write("No results found in Google Scholar as well.")
+
 st.markdown('</div>', unsafe_allow_html=True)
