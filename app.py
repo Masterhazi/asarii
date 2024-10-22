@@ -102,7 +102,11 @@ def create_ris_file(article):
 
 # Function to format the citation
 def format_citation(article):
-    authors = "; ".join(article['bib'].get('author', []))
+    authors = article['bib'].get('author', [])
+    # Joining authors correctly
+    if isinstance(authors, str):
+        authors = [authors]  # Ensure it's a list if a single string
+    authors = "; ".join(authors)
     title = article['bib'].get('title', 'No Title')
     venue = article['bib'].get('venue', 'Unknown Journal')
     pub_year = article['bib'].get('pub_year', 'Unknown Year')
@@ -184,7 +188,7 @@ if st.button("Search") and query:
             st.write("**Formatted Citation:**")
             st.text_area("Citation", citation, height=100)
 
-            # Generate a summary using Google Generative AI
+            # Fetch abstract
             abstract = article['abstract']
             if abstract:
                 prompt = template.format(abstract=abstract)
@@ -202,36 +206,23 @@ if st.button("Search") and query:
                 st.write("No abstract available for this article.")
                 st.text_area("Summary", "No abstract available to generate a summary.", height=200)
     else:
-        # If no results in PubMed, search Google Scholar
-        st.write("No results found in PubMed. Searching Google Scholar...")
-
-        # Perform Google Scholar search
-        search_query = scholarly.search_pubs(query)
-        scholar_results = []
-
-        for _ in range(1):  # Limit to 1 result
-            try:
-                scholar_article = next(search_query)
-                scholar_results.append(scholar_article)
-            except StopIteration:
-                break
-
+        # Search in Google Scholar if no results found in PubMed
+        scholar_results = scholarly.search_pubs(query)
+        
         if scholar_results:
             for scholar_article in scholar_results:
-                # Create RIS file
+                scholar_article = scholarly.fill(scholar_article)  # Fetch full details
                 ris_file = create_ris_file(scholar_article)
                 st.text_area("RIS File", ris_file, height=300)
 
-                # Download the RIS file with the title as the filename
                 title = scholar_article.bib['title'].replace(" ", "_")
                 st.download_button("Download RIS", ris_file, file_name=f"{title}.ris")
 
-                # Generate a formatted citation
                 citation = format_citation(scholar_article)
                 st.write("**Formatted Citation:**")
                 st.text_area("Citation", citation, height=100)
 
-                # Generate a summary using Google Generative AI
+                # Fetch abstract
                 abstract = scholar_article.bib.get('abstract', None)
                 if abstract:
                     prompt = template.format(abstract=abstract)
@@ -248,7 +239,5 @@ if st.button("Search") and query:
                 else:
                     st.write("No abstract available for this article.")
                     st.text_area("Summary", "No abstract available to generate a summary.", height=200)
-        else:
-            st.write("No results found in Google Scholar as well.")
 
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)  # Close the purple background div
