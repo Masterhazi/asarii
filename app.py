@@ -120,7 +120,7 @@ def format_citation(article):
     au = ""
     for i in article['bib'].get('author', []):
         if i.strip():  # If there's content, keep adding to au
-            au += i + " "
+            au += i
         else:  # If it's a space or empty, add au to auth list
             auth.append(au.strip())
             au = ""
@@ -228,7 +228,6 @@ if st.button("Search") and query:
             else:
                 st.write("No abstract available for this article.")
                 st.text_area("Summary", "No abstract available to generate a summary.", height=200)
-
     else:  # Only search Google Scholar if no PubMed results
         # Search in Google Scholar 
         scholar_results = scholarly.search_pubs(query)
