@@ -186,6 +186,9 @@ def fetch_pubmed_article(pmids):
     return articles
 
 # Handling the search and response
+# ... (Your existing import statements, function definitions, and other code) 
+
+# Handling the search and response
 if st.button("Search") and query:
     # Search in PubMed first
     pmids = search_pubmed(query)
@@ -225,10 +228,11 @@ if st.button("Search") and query:
             else:
                 st.write("No abstract available for this article.")
                 st.text_area("Summary", "No abstract available to generate a summary.", height=200)
-    else:
-        # Search in Google Scholar if no results found in PubMed
+
+    else:  # Only search Google Scholar if no PubMed results
+        # Search in Google Scholar 
         scholar_results = scholarly.search_pubs(query)
-        
+
         if scholar_results:
             for scholar_article in scholar_results:
                 scholar_article = scholarly.fill(scholar_article)  # Fetch full details
