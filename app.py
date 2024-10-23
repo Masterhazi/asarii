@@ -225,40 +225,40 @@ if st.button("Search") and query:
             else:
                 st.write("No abstract available for this article.")
                 st.text_area("Summary", "No abstract available to generate a summary.", height=200)
-else:  # Only search Google Scholar if no PubMed results
+    else:  # Only search Google Scholar if no PubMed results
      # Search in Google Scholar 
-     scholar_results = scholarly.search_pubs(query)
-     try:
-         scholar_article = next(scholar_results)  # Get the first result
-         scholar_article = scholarly.fill(scholar_article)
-         ris_file = create_ris_file(scholar_article)
-         st.text_area("RIS File", ris_file, height=300)
-
-         st.download_button("Download RIS", ris_file, file_name="article.ris")
-
-         citation = format_citation(scholar_article)
-         st.write("**Formatted Citation:**")
-         st.text_area("Citation", citation, height=100)
-
-         # Fetch abstract
-         abstract = scholar_article['bib'].get('abstract', None)
-         if abstract:
-             prompt = template.format(abstract=abstract)
-             try:
-                 summary = llm.predict(text=prompt)
-                 if summary:
-                     st.write("**Summary:**")
-                     st.write(summary, height=200)
-                 else:
-                     st.write("No summary generated.")
-             except Exception as e:
-                 st.write(f"Error generating summary: {e}")
-                 st.text_area("Summary", "An error occurred while generating the summary. Please try again.", height=200)
-         else:
-             st.write("No abstract available for this article.")
-             st.text_area("Summary", "No abstract available to generate a summary.", height=200)
-
-     except StopIteration:
-         # Handle the case where no results are found
-         st.write("No results found in Google Scholar.")
+         scholar_results = scholarly.search_pubs(query)
+         try:
+             scholar_article = next(scholar_results)  # Get the first result
+             scholar_article = scholarly.fill(scholar_article)
+             ris_file = create_ris_file(scholar_article)
+             st.text_area("RIS File", ris_file, height=300)
+    
+             st.download_button("Download RIS", ris_file, file_name="article.ris")
+    
+             citation = format_citation(scholar_article)
+             st.write("**Formatted Citation:**")
+             st.text_area("Citation", citation, height=100)
+    
+             # Fetch abstract
+             abstract = scholar_article['bib'].get('abstract', None)
+             if abstract:
+                 prompt = template.format(abstract=abstract)
+                 try:
+                     summary = llm.predict(text=prompt)
+                     if summary:
+                         st.write("**Summary:**")
+                         st.write(summary, height=200)
+                     else:
+                         st.write("No summary generated.")
+                 except Exception as e:
+                     st.write(f"Error generating summary: {e}")
+                     st.text_area("Summary", "An error occurred while generating the summary. Please try again.", height=200)
+             else:
+                 st.write("No abstract available for this article.")
+                 st.text_area("Summary", "No abstract available to generate a summary.", height=200)
+    
+         except StopIteration:
+             # Handle the case where no results are found
+             st.write("No results found in Google Scholar.")
 st.markdown('</div>', unsafe_allow_html=True)  # Close the purple background div
