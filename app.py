@@ -186,9 +186,6 @@ def fetch_pubmed_article(pmids):
     return articles
 
 # Handling the search and response
-# ... (Your existing import statements, function definitions, and other code) 
-
-# Handling the search and response
 if st.button("Search") and query:
     # Search in PubMed first
     pmids = search_pubmed(query)
@@ -231,10 +228,9 @@ if st.button("Search") and query:
     else:  # Only search Google Scholar if no PubMed results
         # Search in Google Scholar 
         scholar_results = scholarly.search_pubs(query)
-
-        if scholar_results:
-            for scholar_article in scholar_results:
-                scholar_article = scholarly.fill(scholar_article)  # Fetch full details
+            try:
+                scholar_article = next(scholar_results)  # Get the first result
+                scholar_article = scholarly.fill(scholar_article)
                 ris_file = create_ris_file(scholar_article)
                 st.text_area("RIS File", ris_file, height=300)
 
@@ -262,4 +258,7 @@ if st.button("Search") and query:
                     st.write("No abstract available for this article.")
                     st.text_area("Summary", "No abstract available to generate a summary.", height=200)
 
+            except StopIteration:
+        # Handle the case where no results are found
+                st.write("No results found in Google Scholar.")
 st.markdown('</div>', unsafe_allow_html=True)  # Close the purple background div
