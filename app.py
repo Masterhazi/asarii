@@ -100,7 +100,7 @@ def create_ris_file(article):
         auth.append(au.strip())    
     ris_file = ""
     ris_file += "TY  - JOUR\n"
-    ris_file += "AU  - " + "; ".join(auth) + "\n"
+    ris_file += "AU  - " + ; .join(auth) + "\n"
     ris_file += "PY  - " + article['bib'].get('pub_year', 'Unknown') + "\n"
     ris_file += "TI  - " + article['bib'].get('title', 'No Title') + "\n"
     ris_file += "JO  - " + article['bib'].get('journal', 'Unknown Journal') + "\n"
