@@ -88,9 +88,19 @@ llm = ChatGoogleGenerativeAI(model='gemini-pro', api_key=os.getenv('GOOGLE_API_K
 
 # Function to create a RIS file
 def create_ris_file(article):
+    auth = []
+    au = ""
+    for i in article['bib'].get('author', []):
+        if i.strip():  # If there's content, keep adding to au
+            au += i + " "
+        else:  # If it's a space or empty, add au to auth list
+            auth.append(au.strip())
+            au = ""
+    if au:  # Append the last author if au is not empty
+        auth.append(au.strip())    
     ris_file = ""
     ris_file += "TY  - JOUR\n"
-    ris_file += "AU  - " + "; ".join(article['authors']) + "\n"
+    ris_file += "AU  - " + "; ".join(auth) + "\n"
     ris_file += "PY  - " + article['pub_year'] + "\n"
     ris_file += "TI  - " + article['title'] + "\n"
     ris_file += "JO  - " + article['journal'] + "\n"
@@ -102,15 +112,12 @@ def create_ris_file(article):
     ris_file += "IS  - " + article['issue'] + "\n"
     ris_file += "AB  - " + article['abstract'] + "\n"
     ris_file += "ER  - \n"
-    return ris_file
+    return ris_file,auth
 
 # Function to format the citation
 def format_citation(article):
-    authors = article['bib'].get('author', [])
-    # Joining authors correctly
-    if isinstance(authors, str):
-        authors = [authors]  # Ensure it's a list if a single string
-    authors = "; ".join(authors)
+    
+    authors = "; ".join(auth)
     title = article['bib'].get('title', 'No Title')
     venue = article['bib'].get('venue', 'Unknown Journal')
     pub_year = article['bib'].get('pub_year', 'Unknown Year')
