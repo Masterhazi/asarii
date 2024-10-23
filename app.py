@@ -114,25 +114,26 @@ def create_ris_file(article):
     ris_file += "ER  - \n"
     return ris_file
 
-auth = []
-au = ""
-for i in article['bib'].get('author', []):
-    if i.strip():  # If there's content, keep adding to au
-        au += i
-    else:  # If it's a space or empty, add au to auth list
-        auth.append(au.strip())
-        au = ""
-    if au:  # Append the last author if au is not empty
-        auth.append(au.strip()) 
+
 # Function to format the citation
-def format_citation(article):        
-    authors = "; ".join(auth)
+def format_citation(article):  
+    auth = []
+    au = ""
+    for i in article['bib'].get('author', []):
+        if i.strip():  # If there's content, keep adding to au
+            au += i
+        else:  # If it's a space or empty, add au to auth list
+            auth.append(au.strip())
+            au = ""
+        if au:  # Append the last author if au is not empty
+            auth.append(au.strip()) 
+            
     title = article['bib'].get('title', 'No Title')
     venue = article['bib'].get('venue', 'Unknown Journal')
     pub_year = article['bib'].get('pub_year', 'Unknown Year')
     volume = article['bib'].get('volume', 'Unknown Volume')
     page = article['bib'].get('page', 'Unknown Page')
-
+    authors = "; ".join(auth)
     # Formatting the citation
     citation = f"{authors}. {title}. {venue}. {pub_year};{volume}:{page}."
     return citation
