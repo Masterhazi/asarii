@@ -216,7 +216,8 @@ if st.button("Search") and query:
                 st.write("No abstract available for this article.")
                 st.text_area("Summary", "No abstract available to generate a summary.", height=200)
     else:  # Only search Google Scholar if no PubMed results
-     # Search in Google Scholar 
+     # Search in Google Scholar
+        st.write("Pubmed had no articles lemme look at google scholar quickly")
          scholar_results = scholarly.search_pubs(query)
          try:
              scholar_article = next(scholar_results)  # Get the first result
