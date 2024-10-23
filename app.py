@@ -90,13 +90,17 @@ llm = ChatGoogleGenerativeAI(model='gemini-pro', api_key=os.getenv('GOOGLE_API_K
 def create_ris_file(article):
     ris_file = ""
     ris_file += "TY  - JOUR\n"
-    ris_file += "AU  - " + "; ".join(article['bib'].get('author', [])) + "\n"
-    ris_file += "PY  - " + str(article['bib'].get('pub_year', 'Unknown')) + "\n"
-    ris_file += "TI  - " + article['bib'].get('title', 'No Title') + "\n"
-    ris_file += "JO  - " + article['bib'].get('venue', 'Unknown Journal') + "\n"
-    ris_file += "VL  - " + article['bib'].get('volume', 'Unknown Volume') + "\n"
-    ris_file += "SP  - " + article['bib'].get('page', 'Unknown Page') + "\n"
-    ris_file += "UR  - " + article.get('pub_url', 'No URL') + "\n"
+    ris_file += "AU  - " + "; ".join(article['authors']) + "\n"
+    ris_file += "PY  - " + article['pub_year'] + "\n"
+    ris_file += "TI  - " + article['title'] + "\n"
+    ris_file += "JO  - " + article['journal'] + "\n"
+    ris_file += "VL  - " + article['volume'] + "\n"
+    ris_file += "SP  - " + article['start_page'] + "\n"
+    ris_file += "EP  - " + article['end_page'] + "\n"
+    ris_file += "UR  - " + article['url'] + "\n"
+    ris_file += "DO  - " + article['doi'] + "\n"
+    ris_file += "IS  - " + article['issue'] + "\n"
+    ris_file += "AB  - " + article['abstract'] + "\n"
     ris_file += "ER  - \n"
     return ris_file
 
@@ -215,7 +219,7 @@ if st.button("Search") and query:
                 ris_file = create_ris_file(scholar_article)
                 st.text_area("RIS File", ris_file, height=300)
 
-                title = scholar_article['bib']['title'].replace(" ", "_")
+                title = scholar_article['bib'].get('title').replace(" ", "_")
                 st.download_button("Download RIS", ris_file, file_name=f"{title}.ris")
 
                 citation = format_citation(scholar_article)
