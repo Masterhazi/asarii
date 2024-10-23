@@ -226,7 +226,7 @@ if st.button("Search") and query:
                 ris_file = create_ris_file(scholar_article)
                 st.text_area("RIS File", ris_file, height=300)
 
-                title = scholar_article['bib'].get('title').replace(" ", "_")
+                title = scholar_article['bib'].get('title')
                 st.download_button("Download RIS", ris_file, file_name=f"{title}.ris")
 
                 citation = format_citation(scholar_article)
@@ -234,7 +234,7 @@ if st.button("Search") and query:
                 st.text_area("Citation", citation, height=100)
 
                 # Fetch abstract
-                abstract = scholar_article.bib.get('abstract', None)
+                abstract = scholar_article[bib].get('abstract', None)
                 if abstract:
                     prompt = template.format(abstract=abstract)
                     try:
