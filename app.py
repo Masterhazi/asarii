@@ -100,7 +100,7 @@ def create_ris_file(article):
         auth.append(au.strip())    
     ris_file = ""
     ris_file += "TY  - JOUR\n"
-    ris_file += "AU  - " + ; .join(auth) + "\n"
+    ris_file += "AU  - " + "; ".join(auth) + "\n"
     ris_file += "PY  - " + article['bib'].get('pub_year', 'Unknown') + "\n"
     ris_file += "TI  - " + article['bib'].get('title', 'No Title') + "\n"
     ris_file += "JO  - " + article['bib'].get('journal', 'Unknown Journal') + "\n"
@@ -112,11 +112,20 @@ def create_ris_file(article):
     ris_file += "IS  - " + article['bib'].get('issue', 'Unknown Issue') + "\n"
     ris_file += "AB  - " + article['bib'].get('abstract', 'No abstract available') + "\n"
     ris_file += "ER  - \n"
-    return ris_file,auth
+    return ris_file
 
 # Function to format the citation
 def format_citation(article):
-    
+     auth = []
+    au = ""
+    for i in article['bib'].get('author', []):
+        if i.strip():  # If there's content, keep adding to au
+            au += i + " "
+        else:  # If it's a space or empty, add au to auth list
+            auth.append(au.strip())
+            au = ""
+    if au:  # Append the last author if au is not empty
+        auth.append(au.strip())    
     authors = "; ".join(auth)
     title = article['bib'].get('title', 'No Title')
     venue = article['bib'].get('venue', 'Unknown Journal')
