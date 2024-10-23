@@ -116,7 +116,7 @@ def create_ris_file(article):
 
 # Function to format the citation
 def format_citation(article):
-     auth = []
+    auth = []
     au = ""
     for i in article['bib'].get('author', []):
         if i.strip():  # If there's content, keep adding to au
@@ -124,8 +124,8 @@ def format_citation(article):
         else:  # If it's a space or empty, add au to auth list
             auth.append(au.strip())
             au = ""
-    if au:  # Append the last author if au is not empty
-        auth.append(au.strip())    
+        if au:  # Append the last author if au is not empty
+            auth.append(au.strip())    
     authors = "; ".join(auth)
     title = article['bib'].get('title', 'No Title')
     venue = article['bib'].get('venue', 'Unknown Journal')
