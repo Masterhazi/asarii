@@ -45,14 +45,14 @@ st.markdown("""
         /* Button styles */
         .stButton {
             background-color: transparent; /* Remove background color */
-            color: #4B0082; /* Dark purple text */
-            border: 1px solid #4B0082; /* Dark purple border */
-            transition: transform 0.2s; /* Smooth zoom effect */
-            padding: 10px 15px; /* Adjust padding for better sizing */
-            border-radius: 5px; /* Rounded corners */
-            cursor: pointer; /* Pointer cursor on hover */
-            display: inline-block; /* Ensure button displays inline and sizes according to text */
-            text-align: center; /* Center text */
+            color: #4B0082 !important;  /* Dark purple text */
+            border: 1px solid #4B0082 !important; /* Dark purple border */
+            transition: transform 0.2s !important; /* Smooth zoom effect */
+            padding: 10px 15px !important; /* Adjust padding for better sizing */
+            border-radius: 5px !important; /* Rounded corners */
+            cursor: pointer !important; /* Pointer cursor on hover */
+            display: inline-block !important; /* Ensure button displays inline and sizes according to text */
+            text-align: center !important; /* Center text */
         }
         .stButton:hover {
             transform: scale(1.1); /* Zoom in effect */
