@@ -92,7 +92,7 @@ def create_ris_file(article):
     au = ""
     for i in article['bib'].get('author', []):
         if i.strip():  # If there's content, keep adding to au
-            au += i + " "
+            au += i
         else:  # If it's a space or empty, add au to auth list
             auth.append(au.strip())
             au = ""
