@@ -215,7 +215,7 @@ if st.button("Search") and query:
                 ris_file = create_ris_file(scholar_article)
                 st.text_area("RIS File", ris_file, height=300)
 
-                title = scholar_article.bib['title'].replace(" ", "_")
+                title = scholar_article['title'].replace(" ", "_")
                 st.download_button("Download RIS", ris_file, file_name=f"{title}.ris")
 
                 citation = format_citation(scholar_article)
